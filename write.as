@@ -1,10 +1,10 @@
-EXTERN  write
-scflag  IS      $15
-flag    IS      $16                *flag para verificação de fim de texto
-arg     IS      $17                *argumento: comprimento máximo da linha    
-p1      IS      $18                *ponteiros
-p2      IS      $19
-p3      IS      $20
+	EXTERN  write
+scflag	IS	$15
+flag	IS      $16				*flag para verificação de fim de texto
+arg     IS	$17				*argumento: comprimento máximo da linha	
+p1      IS	$18				*ponteiros
+p2      IS	$19
+p3      IS	$20
 spct    IS      $21
 spn     IS      $22
 c1      IS      $24
@@ -28,12 +28,12 @@ calc    SUBU    $23, p2, p1     *calcula número de espacos adicionais OK
         SUBU    rZ, $23, c1
         SUBU    rZ, spct, rZ
         JMP     output
-output  SUBU    $23, p2, p1
-        JNP     $23, end
-        SETW    rX, 2
-        LDB     rY, p1, 0
+output  SUBU	$23, p2, p1
+	    JNP	    $23, end
+        SETW	rX, 2
+	    LDB	    rY, p1, 0
         LDB     $100, p1, 0     *
-        INT     #80
+	    INT	    #80
         CMP     $23, $98, 6     **
         JZ      $23, 17         **
         JP      flag, 16
@@ -41,9 +41,9 @@ output  SUBU    $23, p2, p1
         OR      c1, spn, 0
         JNZ     $23, 13         
         JZ      c1, 6
-        SETW    rX, 2
+        SETW	rX, 2
         SETW    rY, 32
-        INT     #80
+        INT 	#80
         SUBU    c1, c1, 1
         JMP     -5
         JNZ     rZ, 5                     
@@ -57,9 +57,9 @@ output  SUBU    $23, p2, p1
 end     CMP     $23, $100, 10   
         JZ      $23, 5          
         JZ      scflag, loop    ****
-end2    SETW    rX, 2           
+end2    SETW	rX, 2           
         SETW    rY, 10
-        INT        #80
+        INT	    #80
         SETW    $98, 0          
         RET     0
 loop    LDB     rY, p1, 0
