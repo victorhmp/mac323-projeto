@@ -14,7 +14,7 @@ write   OR      p3, p1, 0
         JMP     count
 count   ADDU    p3, p3, 1       *conta numero de espacos presentes OK
         CMP     $23, p3, p2
-        JZ      $23, calc
+        JNN     $23, calc
         LDB     rY, p3, 0
         CMP     $23, rY, 32
         JNZ     $23, count
