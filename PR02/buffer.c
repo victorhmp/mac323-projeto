@@ -39,14 +39,12 @@ void *buffer_push_back(Buffer *B) {
 }
 
 int read_line (FILE *input, Buffer *B) {
+  int read_count = 0;
   buffer_reset(B);
   while((in = (char)fgetc(input)) != EOF) {
     insert_pos = buffer_push_back(B);
     *insert_pos = in;
+    read_count++;
   }
-  return 0;
-}
-
-int main() {
-  return 0;
+  return read_count;
 }
