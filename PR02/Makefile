@@ -1,5 +1,11 @@
 center: buffer.c center.c
 		gcc center.c buffer.c -o center
 
-test: center test.txt
-		./center test.txt
+test: center foo.txt test.txt
+		echo "running made-up test"
+		./center test.txt test.out.txt 30
+		echo "running test from Paca"			
+		./center foo.txt bar.txt 25
+
+clean:
+		rm -f buffer center bar.txt *.out.txt
