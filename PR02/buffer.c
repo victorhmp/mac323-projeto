@@ -20,7 +20,8 @@ Buffer *buffer_create(size_t member_size) {
 }
 
 void buffer_reset(Buffer *B) {
-  free(B->data);
+  free(B);
+  B = buffer_create(B->member_size);
   B->data = malloc(B->member_size * BUFFER_MIN_SIZE);
   B->p = 0;
 }
@@ -40,8 +41,14 @@ void *buffer_push_back(Buffer *B) {
 
 int read_line (FILE *input, Buffer *B) {
   int read_count = 0;
+  int end_line = 0;
   buffer_reset(B);
-  while((in = (char)fgetc(input)) != EOF) {
+  while(!end_line) {
+    in = (char)fgetc(input);
+    if (in == '\n') {
+      end_line = 1;
+    }
+    if (in == EOF) break;
     insert_pos = buffer_push_back(B);
     *insert_pos = in;
     read_count++;
