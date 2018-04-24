@@ -1,5 +1,5 @@
 center: buffer.c center.c
-		gcc center.c buffer.c -o center
+		gcc -Wall -ansi -pedantic -O2 -Wextra center.c buffer.c -o center
 
 test: center foo.txt test.txt
 		echo "running made-up test"
