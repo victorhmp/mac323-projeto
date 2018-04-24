@@ -9,6 +9,16 @@ char *current_line;
 int line_counter = 0;
 int is_over = 0;
 int chars_in_line = 0;
+int error_line[10];
+int error_count = 0;
+int line_count = 1;
+
+void printerror() {
+  int i = 0;
+  while (error_line[i] != 0) {
+    fprintf(stderr, "erro na linha %d\n", error_line[i++]);
+  }
+}
 
 char *trimwhitespace(char *str) {
   char *end;
@@ -50,7 +60,13 @@ int main (int argc, char** argv) {
     if (col_limit % 2 == 1) greaterHalf = 1+col_limit/2;
     else greaterHalf = col_limit/2;
     fprintf (output_file,"%*s\n", greaterHalf + line_length / 2, current_line);
+    if (line_length > col_limit) {
+      error_line[error_count] = line_count;
+      error_count++;
+    }
+    line_count++;
   }
 
+  printerror();
   return 0;
 }
