@@ -13,10 +13,10 @@ int error_line[10];
 int error_count = 0;
 int line_count = 1;
 
-void printerror() {
+void printerror(char** argv) {
   int i = 0;
   while (error_line[i] != 0) {
-    fprintf(stderr, "erro na linha %d\n", error_line[i++]);
+    fprintf(stderr, "center: %s: line %d: line too long.\n", argv[1], error_line[i++]);
   }
 }
 
@@ -67,6 +67,6 @@ int main (int argc, char** argv) {
     line_count++;
   }
 
-  printerror();
+  printerror(argv);
   return 0;
 }
