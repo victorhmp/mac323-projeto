@@ -46,7 +46,10 @@ int main (int argc, char** argv) {
     int line_length = strlen(current_line);
 
     // printf("%d\n", line_length);
-    fprintf (output_file,"%*s\n", col_limit / 2 + line_length / 2, current_line);
+    int greaterHalf;
+    if (col_limit % 2 == 1) greaterHalf = 1+col_limit/2;
+    else greaterHalf = col_limit/2;
+    fprintf (output_file,"%*s\n", greaterHalf + line_length / 2, current_line);
   }
 
   return 0;
