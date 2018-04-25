@@ -1,4 +1,10 @@
+# For PR01
 *.mac
 *.maco
 
+# For PR02
+*.o
+center
+
+# Global
 *.tar.tgz
