@@ -1,11 +1,23 @@
-center: buffer.c center.c
-		gcc -Wall -ansi -pedantic -O2 -Wextra center.c buffer.c -o center
+SRCDIR = ./src
+INCDIR = ./include
+OBJDIR=./obj
 
-test: center foo.txt test.txt
-		echo "running made-up test"
-		./center test.txt test.out.txt 30
-		echo "running test from Paca"			
-		./center foo.txt bar.txt 25
+CC=gcc
+CFLAGS=-Wall -std=c99 -pedantic -O2 -Wextra -I$(INCDIR)
 
+DEPS = $(INCDIR)/buffer.h
+
+OBJ = $(OBJDIR)/buffer.o $(OBJDIR)/center.o
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
+	$(CC) -c $< $(CFLAGS)
+	mkdir -p obj
+	mv *.o ./obj
+
+
+center: $(OBJ)
+	gcc -o $@ $^ $(CFLAGS)
+
+.PHONY: clean
 clean:
-		rm -f buffer center bar.txt *.out.txt
+	rm -rf center $(OBJDIR)
