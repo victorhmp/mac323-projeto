@@ -21,7 +21,7 @@ void printerror(char** argv) {
   }
 }
 
-int allBlank(char *current_line, int count) { 
+int allBlank(char *current_line) { 
   char a = (unsigned char) *current_line;
   while(1) {
     a = (unsigned char) *current_line;
@@ -36,17 +36,17 @@ int allBlank(char *current_line, int count) {
 char *trimwhitespace(char *str) {
   char *end;
 
-  // Trim leading spaces
+  /* Trim leading spaces */
   while(isspace((unsigned char)*str)) str++;
 
   if (*str == 0)
     return str;
 
-  // Trim trailing spaces
+  /* Trim trailing spaces */
   end = str + strlen(str) - 1;
   while(end > str && isspace((unsigned char)*end)) end--;
 
-  // new null terminator
+  /* new null terminator */
   *(end + 1) = 0;
 
   return str; 
@@ -59,22 +59,26 @@ int main (int argc, char** argv) {
   int col_limit = atoi(argv[3]);
   int past_white = 0;
 
+  int line_length = 0;
+  int greaterHalf = 0;
+  int curr_white = 0;
+
   while(!is_over) {
     chars_in_line =  read_line(input_text, b);
     if (chars_in_line == 0) is_over = 1;
-    // printf("%d\n", chars_in_line);
+    /* printf("%d\n", chars_in_line); */
 
     current_line = b->data;
     current_line = trimwhitespace(current_line);
 
-    int line_length = strlen(current_line);
+    line_length = strlen(current_line);
 
-    // printf("%d\n", line_length);
-    int greaterHalf;
+    /* printf("%d\n", line_length); */
+    
     if (col_limit % 2 == 1) greaterHalf = 1+col_limit/2;
     else greaterHalf = col_limit/2;
 
-    int curr_white = allBlank(current_line, line_count);
+    curr_white = allBlank(current_line);
     if (curr_white == 0 || past_white == 0) {
       if (curr_white == 1 && is_over) break;
       if (!is_last) fprintf (output_file,"%*s\n", greaterHalf + line_length / 2, current_line);
@@ -89,6 +93,8 @@ int main (int argc, char** argv) {
     past_white = curr_white;
     line_count++;
   }
+
+  (void)argc; /* unused argument */ 
 
   printerror(argv);
   return 0;

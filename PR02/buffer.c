@@ -36,7 +36,7 @@ void *buffer_push_back(Buffer *B) {
     B->data = realloc(B->data, newSize);
   }
   
-  return (B->data + B->p++ * B->member_size);
+  return ((char*) B->data + B->p++ * B->member_size); /* casts void* to char* to avoid warning */
 }
 
 int read_line (FILE *input, Buffer *B) {
