@@ -14,16 +14,16 @@ int hash(const char *key) {
 }
 
 // linked list node: string (key), EntryData(val) and next node pointer
-typedef struct {
+typedef struct Node {
     const char *key;
     EntryData val;
-    struct node *prev;
-} node;
+    struct Node *prev;
+} Node;
 
 /* Symbol table comprises a single array
    array elements are pointers to the last nodes of each linked list */
 struct stable_s {
-    node *st[M];  
+    Node *st[M];  
 };
 
 SymbolTable stable_create() {
@@ -31,9 +31,9 @@ SymbolTable stable_create() {
     // printf("%d\n", sizeof(struct stable_s));
     SymbolTable a = malloc(sizeof(struct stable_s));
     // printf("%d\n", sizeof(struct stable_s));
-    *(a->st) = malloc(sizeof(M * sizeof(node)));
+    *(a->st) = malloc(sizeof(M * sizeof(Node)));
     for (int i = 0 ; i < M; i++) {
-        node *insert = NULL;
+        Node *insert = NULL;
         a->st[i] = insert;
     }
 
@@ -46,40 +46,41 @@ void stable_destroy(SymbolTable table) {
 }
 
 InsertionResult stable_insert(SymbolTable table, const char *key) {
+    EntryData *find_result = stable_find(table, key);
+    InsertionResult return_value;
 
-    EntryData *check_existence = stable_find(table, key); 
-    InsertionResult to_return;
-    int h = hash(key);
-    
-    // if there is no equal key in the symbol table
-    if (!check_existence) {
-        to_return.new = 1;
-        // Here, we must assign a value to the EntryData of to_return
+    if (find_result != NULL) {
+        return_value.new = 0;
+        printf("%lu\n", sizeof(find_result));
+        free(find_result);
+        return_value.data = malloc(sizeof(EntryData));
+    } else {
+        return_value.new = 1;
+        return_value.data = malloc(sizeof(EntryData));
 
-        node new_node;
+        int h = hash(key);
+        Node new_node;
         new_node.key = key;
         //new_node.val = ;      // assign value to node's val
         new_node.prev = table->st[h];
-        node *ref = &new_node;
+        Node *ref = &new_node;
         table->st[h] = ref;
-    } else {
-        to_return.new = 0;
-        // Here, we must assign a value to the EntryData of to_return
     }
 
-    return to_return;
+    return return_value;
 }
 
 EntryData *stable_find(SymbolTable table, const char *key){
     if (table->st[hash(key)] == NULL) printf("é nulo");
-    node *nd = table->st[hash(key)];    // attempts to get key at correct index given by hash function
+    Node *nd = table->st[hash(key)];    // attempts to get key at correct index given by hash function
     while (nd) {
+        printf("achou a chave %s\n", key);
         if (strcmp(nd->key, key) == 0) {
             return &(nd->val);
         }
         nd = nd->prev;      // Is this right?
     }
-    printf("não deu\n");
+    printf("não achou a chave %s\n", key);
     return NULL;
 }
 
@@ -90,7 +91,8 @@ int stable_visit(SymbolTable table, int (*visit)(const char *key, EntryData *dat
 // client 
 int main() {
     SymbolTable s_table = stable_create();
-    //stable_insert(s_table, "tchau");
+    stable_insert(s_table, "tchau");
+    stable_insert(s_table, "tchau");
     //printf("1 ok");
     //stable_find(s_table, "oi");
     //printf("2 ok");
