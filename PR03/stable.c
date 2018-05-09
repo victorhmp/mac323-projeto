@@ -14,27 +14,29 @@ int hash(const char *key) {
 }
 
 // linked list node: string (key), EntryData(val) and next node pointer
-typedef struct node {
+typedef struct {
     const char *key;
-    EntryData val;    // for test purposes ONLY
+    EntryData val;
     struct node *prev;
 } node;
 
 /* Symbol table comprises a single array
    array elements are pointers to the last nodes of each linked list */
-typedef struct stable_s {
-    node *st[M];    // should * be here?
-} *SymbolTable;     // and here?
+struct stable_s {
+    node *st[M];  
+};
 
-// How to initialize a symboltable whose node *st[] elements are set to null?
 SymbolTable stable_create() {
-    SymbolTable a;
-    a = malloc((sizeof(node*)+sizeof(int)+sizeof(const char*))*M);     //Is this right?
+    // printf("%d\n", sizeof(SymbolTable));
+    // printf("%d\n", sizeof(struct stable_s));
+    SymbolTable a = malloc(sizeof(struct stable_s));
+    // printf("%d\n", sizeof(struct stable_s));
+    *(a->st) = malloc(sizeof(M * sizeof(node)));
     for (int i = 0 ; i < M; i++) {
         node *insert = NULL;
-        a->st[i] = malloc(sizeof(node));  // Necessary?
         a->st[i] = insert;
     }
+
     return a;
 }
 
@@ -47,20 +49,23 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
 
     EntryData *check_existence = stable_find(table, key); 
     InsertionResult to_return;
+    int h = hash(key);
     
     // if there is no equal key in the symbol table
     if (!check_existence) {
         to_return.new = 1;
         // Here, we must assign a value to the EntryData of to_return
+
+        node new_node;
+        new_node.key = key;
+        //new_node.val = ;      // assign value to node's val
+        new_node.prev = table->st[h];
+        node *ref = &new_node;
+        table->st[h] = ref;
+    } else {
+        to_return.new = 0;
+        // Here, we must assign a value to the EntryData of to_return
     }
-    
-    int h = hash(key);
-    node new_node;
-    new_node.key = key;
-    //new_node.val = ;      // assign value to node's val
-    new_node.prev = table->st[h];
-    node *ref = &new_node;
-    table->st[h] = ref;
 
     return to_return;
 }
@@ -85,11 +90,11 @@ int stable_visit(SymbolTable table, int (*visit)(const char *key, EntryData *dat
 // client 
 int main() {
     SymbolTable s_table = stable_create();
-    stable_insert(s_table, "tchau");
+    //stable_insert(s_table, "tchau");
     //printf("1 ok");
-    stable_find(s_table, "oi");
+    //stable_find(s_table, "oi");
     //printf("2 ok");
-    stable_find(s_table, "tchau");
+    //stable_find(s_table, "tchau");
     //printf("3 ok");
     //printf("%s\n", s_table->st[0]->key);
     //stable_destroy(s_table);
