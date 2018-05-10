@@ -43,28 +43,29 @@ void stable_destroy(SymbolTable table) {
 
 InsertionResult stable_insert(SymbolTable table, const char *key) {
     EntryData *find_result = stable_find(table, key);
-    InsertionResult return_value;
+    InsertionResult insert_result;
 
     if (find_result != NULL) {
-        return_value.new = 0;
+        insert_result.new = 0;
         free(find_result);
-        return_value.data = malloc(sizeof(EntryData));
+        insert_result.data = malloc(sizeof(EntryData));
         printf("Key was not inserted (duplicate)\n");
     } else {
-        return_value.new = 1;
-        return_value.data = malloc(sizeof(EntryData));
+        insert_result.new = 1;
 
         int h = hash(key);
         Node *new_node = malloc(sizeof(Node));
         new_node->key = key;
         new_node->prev = table->st[h];
-        new_node->val = return_value.data;
+        new_node->val = malloc(sizeof(EntryData));
         table->st[h] = new_node;
+
+        insert_result.data = new_node->val;
 
         printf("Key was inserted\n");
     }
 
-    return return_value;
+    return insert_result;
 }
 
 EntryData *stable_find(SymbolTable table, const char *key){
@@ -87,41 +88,56 @@ EntryData *stable_find(SymbolTable table, const char *key){
     return NULL;
 }
 
-/*
-int stable_visit(SymbolTable table, int (*visit)(const char *key, EntryData *data)) {
-}*/
+// static int visit(const char *key, EntryData *data) {
+//     if (key != NULL) {
+//         printf("Key: %s, Value: \n", key);
+//         return 1;
+//     }
+// }
 
-// client 
-int main() {
-    SymbolTable s_table = stable_create();
-    printf("ST created.\n");
-    printf("=====================\n");
+int stable_visit(SymbolTable table, 
+                    int (*visit)(const char *key, EntryData *data)) {
+    for (unsigned int i = 0; i < M; i++) {
+        if (table->st[i] != NULL)
+            visit(table->st[i]->key, table->st[i]->val);
+    }
 
-    printf("Inserting the same element 'tchau' two times\n");
-    stable_insert(s_table, "tchau");
-    stable_insert(s_table, "tchau");
-    printf("Test 1 ok\n");
-    printf("=====================\n");
-
-    printf("Looking for element 'oi', which is not in the ST\n");
-    stable_find(s_table, "oi");
-    printf("Test 2 ok\n");
-    printf("=====================\n");
-
-    printf("Looking for element 'test', which is in the ST\n");
-    stable_insert(s_table, "test");
-    stable_insert(s_table, "test2");
-    stable_find(s_table, "test");
-    printf("Test 3 ok\n");
-    printf("=====================\n");
-
-    printf("Trying to print a key directly, should print 'test'\n");
-    printf("%s\n", s_table->st[hash("test")]->key);
-    printf("Test 4 ok\n");
-    printf("=====================\n");
-
-
-    stable_destroy(s_table);
-    printf("Destroy ST\n");
-    return 0;
+    return 1;
 }
+// client
+// int main() {
+//     SymbolTable s_table = stable_create();
+//     printf("ST created.\n");
+//     printf("=====================\n");
+
+//     printf("Inserting the same element 'tchau' two times\n");
+//     stable_insert(s_table, "tchau");
+//     stable_insert(s_table, "tchau");
+//     printf("Test 1 ok\n");
+//     printf("=====================\n");
+
+//     printf("Looking for element 'oi', which is not in the ST\n");
+//     stable_find(s_table, "oi");
+//     printf("Test 2 ok\n");
+//     printf("=====================\n");
+
+//     printf("Looking for element 'test', which is in the ST\n");
+//     stable_insert(s_table, "test");
+//     stable_insert(s_table, "test2");
+//     stable_find(s_table, "test");
+//     printf("Test 3 ok\n");
+//     printf("=====================\n");
+
+//     printf("Trying to print a key directly, should print 'test'\n");
+//     printf("%s\n", s_table->st[hash("test")]->key);
+//     printf("Test 4 ok\n");
+//     printf("=====================\n");
+
+//     printf("Test calling stable_visit to print keys in the ST, using our private visit function\n");
+//     stable_visit(s_table, visit);
+//     printf("=====================\n");
+
+//     stable_destroy(s_table);
+//     printf("Destroy ST\n");
+//     return 0;
+// }
