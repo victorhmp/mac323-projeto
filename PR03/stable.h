@@ -69,3 +69,4 @@ int stable_visit(SymbolTable table,
 
 
 #endif
+
