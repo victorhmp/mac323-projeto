@@ -2,21 +2,21 @@
 #include <string.h>
 #include "stable.h"
 #include <stdio.h>
-#define  M  500
+#define  M  499
 
 // hash function
 int hash(const char *key) {
     //printf("hello\n");
     int h = 0;
-    for (int i = 0; i < strlen(key); i++)
-      h = (31 * h + (int)key) % M;
+    for (unsigned int i = 0; i < strlen(key); i++)
+      h = (31 * h + (int)key[i]) % M;
     return h;
 }
 
 // linked list node: string (key), EntryData(val) and next node pointer
 typedef struct Node {
     const char *key;
-    EntryData val;
+    EntryData *val;
     struct Node *prev;
 } Node;
 
@@ -27,10 +27,7 @@ struct stable_s {
 };
 
 SymbolTable stable_create() {
-    // printf("%d\n", sizeof(SymbolTable));
-    // printf("%d\n", sizeof(struct stable_s));
     SymbolTable a = malloc(sizeof(struct stable_s));
-    // printf("%d\n", sizeof(struct stable_s));
     *(a->st) = malloc(sizeof(M * sizeof(Node)));
     for (int i = 0 ; i < M; i++) {
         Node *insert = NULL;
@@ -41,7 +38,6 @@ SymbolTable stable_create() {
 }
 
 void stable_destroy(SymbolTable table) {
-    //free(table->st);      // Think this should be added, but couldn't allocate st
     free(table);
 }
 
@@ -51,36 +47,43 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
 
     if (find_result != NULL) {
         return_value.new = 0;
-        printf("%lu\n", sizeof(find_result));
         free(find_result);
         return_value.data = malloc(sizeof(EntryData));
+        printf("Key was not inserted (duplicate)\n");
     } else {
         return_value.new = 1;
         return_value.data = malloc(sizeof(EntryData));
 
         int h = hash(key);
-        Node new_node;
-        new_node.key = key;
-        //new_node.val = ;      // assign value to node's val
-        new_node.prev = table->st[h];
-        Node *ref = &new_node;
-        table->st[h] = ref;
+        Node *new_node = malloc(sizeof(Node));
+        new_node->key = key;
+        new_node->prev = table->st[h];
+        new_node->val = return_value.data;
+        table->st[h] = new_node;
+
+        printf("Key was inserted\n");
     }
 
     return return_value;
 }
 
 EntryData *stable_find(SymbolTable table, const char *key){
-    if (table->st[hash(key)] == NULL) printf("é nulo");
-    Node *nd = table->st[hash(key)];    // attempts to get key at correct index given by hash function
+    if (table->st[hash(key)] == NULL){
+        printf("New key or not in the ST\n");
+        return NULL;
+    }
+
+    // attempts to get key at correct index given by hash function
+    Node *nd = table->st[hash(key)];
     while (nd) {
-        printf("achou a chave %s\n", key);
         if (strcmp(nd->key, key) == 0) {
-            return &(nd->val);
+            printf("Found %s\n", key);
+            EntryData *return_pointer = nd->val;
+            return return_pointer;
         }
         nd = nd->prev;      // Is this right?
     }
-    printf("não achou a chave %s\n", key);
+    printf("Could not find %s\n", key);
     return NULL;
 }
 
@@ -91,14 +94,34 @@ int stable_visit(SymbolTable table, int (*visit)(const char *key, EntryData *dat
 // client 
 int main() {
     SymbolTable s_table = stable_create();
+    printf("ST created.\n");
+    printf("=====================\n");
+
+    printf("Inserting the same element 'tchau' two times\n");
     stable_insert(s_table, "tchau");
     stable_insert(s_table, "tchau");
-    //printf("1 ok");
-    //stable_find(s_table, "oi");
-    //printf("2 ok");
-    //stable_find(s_table, "tchau");
-    //printf("3 ok");
-    //printf("%s\n", s_table->st[0]->key);
-    //stable_destroy(s_table);
+    printf("Test 1 ok\n");
+    printf("=====================\n");
+
+    printf("Looking for element 'oi', which is not in the ST\n");
+    stable_find(s_table, "oi");
+    printf("Test 2 ok\n");
+    printf("=====================\n");
+
+    printf("Looking for element 'test', which is in the ST\n");
+    stable_insert(s_table, "test");
+    stable_insert(s_table, "test2");
+    stable_find(s_table, "test");
+    printf("Test 3 ok\n");
+    printf("=====================\n");
+
+    printf("Trying to print a key directly, should print 'test'\n");
+    printf("%s\n", s_table->st[hash("test")]->key);
+    printf("Test 4 ok\n");
+    printf("=====================\n");
+
+
+    stable_destroy(s_table);
+    printf("Destroy ST\n");
     return 0;
 }
