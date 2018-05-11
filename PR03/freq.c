@@ -9,11 +9,10 @@ int visit(const char *key, EntryData *data) {
     int actual_length = length+1;
     if (key != NULL) {
         int key_len = strlen(key);
-        //printf("Key: %s, Value: \n", key);
         printf("%s", key);
         for (int i = 0; i < actual_length-strlen(key); i++)
             printf(" ");
-        printf("?(Value)");
+        printf("%d", data);
         return 1;
     }
 }
@@ -23,7 +22,7 @@ int main(int argc, char** argv) {
     short file_end = 0;
     char* curr_word = malloc(100 * sizeof(char));
     int curr_index = 0;
-    int curr_length = 0;
+    int str_length = 0;
 
     SymbolTable stable = stable_create();
     while(!file_end){
@@ -34,7 +33,7 @@ int main(int argc, char** argv) {
         }
         else if (!isblank(in)) {
             curr_word[curr_index++] = in;
-            curr_length++;
+            str_length++;
         }
         else {
             EntryData *old_data = stable_find(stable, curr_word);
@@ -47,9 +46,9 @@ int main(int argc, char** argv) {
             char* curr_word = malloc(100 * sizeof(char));
             curr_index = 0;
 
-            if (curr_length > length) 
-                length = curr_length;
-            curr_length = 0;
+            if (str_length > length) 
+                length = str_length;
+            str_length = 0;
         }
     }
 
