@@ -1,6 +1,7 @@
-testing testing testing other_key
+testing1
+testing2
+testing3
+other_key
 another_key
 kojo
-rk10
-rk10
 rk10

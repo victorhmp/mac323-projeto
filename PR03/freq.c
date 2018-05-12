@@ -21,6 +21,7 @@ int visit(const char *key, EntryData *data) {
         printf("Key: %s, Value: %d\n", key, data->i);
         return 1;
     }
+    return 0;
 }
 
 int main(int argc, char** argv) {
@@ -40,14 +41,13 @@ int main(int argc, char** argv) {
         else if (!isblank(in) && in != '\n') {
             curr_word[curr_index++] = in;
             // str_length++;
-
-            printf("Não branco\n");
         }
         else {
             EntryData *old_data = stable_find(stable, curr_word);
             InsertionResult ir = stable_insert(stable, curr_word);
 
-            printf("Adicionou\n");
+            if (ir.new == 0) printf("New node not created\n");
+            if (ir.new == 1) printf("New node created\n");
 
             // printf("%d\n", old_data->i);
             
@@ -78,5 +78,6 @@ int main(int argc, char** argv) {
     stable_visit(stable, visit);
     printf("=====================\n");
 
+    (void)argc;
     return 0;
 }

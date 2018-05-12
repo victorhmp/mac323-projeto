@@ -47,14 +47,14 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
 
     if (find_result != NULL) {
         insert_result.new = 0;
-        free(find_result);
-        insert_result.data = malloc(sizeof(EntryData));
+        insert_result.data = find_result;
         printf("Key was not inserted (duplicate)\n");
     } else {
         insert_result.new = 1;
 
         int h = hash(key);
-        Node *new_node = malloc(sizeof(Node));
+        Node *new_node = table->st[h];
+        new_node = malloc(sizeof(Node));
         new_node->key = key;
         new_node->prev = table->st[h];
         new_node->val = malloc(sizeof(EntryData));
