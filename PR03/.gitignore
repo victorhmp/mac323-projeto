@@ -1,4 +1,5 @@
 stable
+freq
 *.out
 
 *.o
