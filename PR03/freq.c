@@ -17,11 +17,7 @@ int main(int argc, char** argv) {
 
     while(!file_end) {
         char c = fgetc(input_text);
-        if (c == EOF) {
-            file_end = 1;
-            break;
-        }
-        if (isblank(c) || c == '\n') {
+        if (isblank(c) || c == '\n' || c == EOF) {
             InsertionResult insert = stable_insert(stable, curr_word);
             insert.new ? printf("New key\n") : printf("Duplicate\n");
 
@@ -37,6 +33,11 @@ int main(int argc, char** argv) {
                 EntryData aux;
                 aux.i = 1;
                 *(insert.data) = aux;
+            }
+
+            if (c == EOF) {
+                file_end = 1;
+                break;
             }
 
             free(curr_word);
