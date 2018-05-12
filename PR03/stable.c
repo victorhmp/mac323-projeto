@@ -58,7 +58,7 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
         char *store = malloc((strlen(key)+1)*sizeof(char));
         int i = 0;
         while(*key != '\0') {
-            printf("ATRIBUINDO %c\n", *key);
+            // printf("ATRIBUINDO %c\n", *key);
             *store = *key;
             key++;
             store++;
@@ -74,7 +74,7 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
 
         insert_result.data = new_node->val;
 
-        printf("Key was inserted\n");
+        // printf("Key was inserted\n");
     }
 
     return insert_result;
