@@ -4,4 +4,3 @@ testing3
 other_key
 another_key
 kojo
-rk10

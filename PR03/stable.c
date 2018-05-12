@@ -6,7 +6,6 @@
 
 // hash function
 int hash(const char *key) {
-    //printf("hello\n");
     int h = 0;
     for (unsigned int i = 0; i < strlen(key); i++)
       h = (31 * h + (int)key[i]) % M;
@@ -48,14 +47,27 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
     if (find_result != NULL) {
         insert_result.new = 0;
         insert_result.data = find_result;
-        printf("Key was not inserted (duplicate)\n");
-    } else {
+    } 
+    else {
         insert_result.new = 1;
-
+        
         int h = hash(key);
         Node *new_node = table->st[h];
         new_node = malloc(sizeof(Node));
-        new_node->key = key;
+
+        char *store = malloc((strlen(key)+1)*sizeof(char));
+        int i = 0;
+        while(*key != '\0') {
+            printf("ATRIBUINDO %c\n", *key);
+            *store = *key;
+            key++;
+            store++;
+            i++;
+        }
+        store -= i;
+        key -= i;
+        new_node->key = store;
+
         new_node->prev = table->st[h];
         new_node->val = malloc(sizeof(EntryData));
         table->st[h] = new_node;
@@ -70,7 +82,6 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
 
 EntryData *stable_find(SymbolTable table, const char *key){
     if (table->st[hash(key)] == NULL){
-        printf("New key or not in the ST\n");
         return NULL;
     }
 
@@ -78,22 +89,13 @@ EntryData *stable_find(SymbolTable table, const char *key){
     Node *nd = table->st[hash(key)];
     while (nd) {
         if (strcmp(nd->key, key) == 0) {
-            printf("Found %s\n", key);
             EntryData *return_pointer = nd->val;
             return return_pointer;
         }
-        nd = nd->prev;      // Is this right?
+        nd = nd->prev;
     }
-    printf("Could not find %s\n", key);
     return NULL;
 }
-
-// static int visit(const char *key, EntryData *data) {
-//     if (key != NULL) {
-//         printf("Key: %s, Value: \n", key);
-//         return 1;
-//     }
-// }
 
 int stable_visit(SymbolTable table, 
                     int (*visit)(const char *key, EntryData *data)) {
