@@ -18,10 +18,14 @@ int main(int argc, char** argv) {
     while(!file_end) {
         char c = fgetc(input_text);
         if (isblank(c) || c == '\n' || c == EOF) {
-            InsertionResult insert = stable_insert(stable, curr_word);
-            insert.new ? printf("New key\n") : printf("Duplicate\n");
+            InsertionResult insert;
+            insert.new = -1;
+            insert.data = NULL;
+            if (strlen(curr_word) > 0) 
+                insert = stable_insert(stable, curr_word);
+            // insert.new ? printf("New key\n") : printf("Duplicate\n");
 
-            if (!insert.new) {
+            if (insert.new == 0) {
                 EntryData *old_data = stable_find(stable, curr_word);
 
                 EntryData aux;
@@ -29,7 +33,7 @@ int main(int argc, char** argv) {
                 aux.i++;
                 *(insert.data) = aux;
             }
-            else {
+            else if (insert.new == 1){
                 EntryData aux;
                 aux.i = 1;
                 *(insert.data) = aux;
