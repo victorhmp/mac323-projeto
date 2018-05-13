@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define  UL  unsigned long
+#define  UI  unsigned int
 #define MAX_KEY_NUM 11234
 
 int great_len = 0;
@@ -15,14 +15,6 @@ struct table_element {
 struct table_element helper[MAX_KEY_NUM];
 int num_keys = 0;
 
-// int cmpfunc(const void *a1, const void *b1) {
-//     Node *a = (Node*)a1, *b = (Node*)b1;
-//     int c = strcmp(a->key, b->key);
-//     return c;
-//     if (c <= 0) return 0;
-//     else return 1;
-// }
-
 int compare(const void *s1, const void *s2) {
     struct table_element *e1 = (struct table_element *)s1;
     struct table_element *e2 = (struct table_element *)s2;
@@ -32,26 +24,19 @@ int compare(const void *s1, const void *s2) {
 }
 
 int visit(const char *key, EntryData *data) {
-
     helper[num_keys].key = key;
     helper[num_keys].data = data;
 
     num_keys++;
-
-    // printf("%s", key);
-    // for (UL i = 0; i < great_len-strlen(key)+1; i++) 
-    //     printf(" ");
-    // printf("%d\n", data->i);
     return 1;
 }
 
 void print_in_order(struct table_element *arr) {
     for (int i = 0; i < num_keys; i++) {
         printf("%s", arr[i].key);
-        for (UL i = 0; i < great_len-strlen(arr[i].key)+1; i++) 
+        for (UI j = 0; j < great_len-strlen(arr[i].key)+1; j++) 
             printf(" ");
         printf("%d\n", arr[i].data->i);
-        // return 1;
     }
 }
 
@@ -112,6 +97,7 @@ int main(int argc, char** argv) {
 
     print_in_order(helper);
 
+    stable_destroy(stable);
     (void)argc;
     return 0;
 }

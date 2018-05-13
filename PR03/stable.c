@@ -2,7 +2,7 @@
 #include <string.h>
 #include "stable.h"
 #include <stdio.h>
-#define  M  2
+#define  M 7919
 
 // hash function
 int hash(const char *key) {
@@ -12,7 +12,7 @@ int hash(const char *key) {
     return h;
 }
 
-// linked list node: string (key), EntryData(val) and next node pointer
+// linked list node: string (key), EntryData(val) and prev node pointer
 typedef struct Node {
     const char *key;
     EntryData *val;
@@ -37,6 +37,9 @@ SymbolTable stable_create() {
 }
 
 void stable_destroy(SymbolTable table) {
+    for(int i = 0; i < M; i++) {
+        free(table->st[i]);
+    }
     free(table);
 }
 
@@ -101,9 +104,8 @@ void recurs_visit(Node *node, int (*visit)(const char *key, EntryData *data)) {
 int stable_visit(SymbolTable table, 
                     int (*visit)(const char *key, EntryData *data)) {
     for (unsigned int i = 0; i < M; i++) {
-        /*if (table->st[i] != NULL)
-            visit(table->st[i]->key, table->st[i]->val);*/
-        if (table->st[i] != NULL) recurs_visit(table->st[i], visit);
+        if (table->st[i] != NULL) 
+            recurs_visit(table->st[i], visit);
     }
 
     return 1;
