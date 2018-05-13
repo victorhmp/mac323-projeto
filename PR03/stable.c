@@ -58,7 +58,6 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
         char *store = malloc((strlen(key)+1)*sizeof(char));
         int i = 0;
         while(*key != '\0') {
-            // printf("ATRIBUINDO %c\n", *key);
             *store = *key;
             key++;
             store++;
@@ -73,8 +72,6 @@ InsertionResult stable_insert(SymbolTable table, const char *key) {
         table->st[h] = new_node;
 
         insert_result.data = new_node->val;
-
-        // printf("Key was inserted\n");
     }
 
     return insert_result;
@@ -85,7 +82,6 @@ EntryData *stable_find(SymbolTable table, const char *key){
         return NULL;
     }
 
-    // attempts to get key at correct index given by hash function
     Node *nd = table->st[hash(key)];
     while (nd) {
         if (strcmp(nd->key, key) == 0) {
@@ -106,41 +102,3 @@ int stable_visit(SymbolTable table,
 
     return 1;
 }
-// client
-// int main() {
-//     SymbolTable s_table = stable_create();
-//     printf("ST created.\n");
-//     printf("=====================\n");
-
-//     printf("Inserting the same element 'tchau' two times\n");
-//     stable_insert(s_table, "tchau");
-//     stable_insert(s_table, "tchau");
-//     printf("Test 1 ok\n");
-//     printf("=====================\n");
-
-//     printf("Looking for element 'oi', which is not in the ST\n");
-//     stable_find(s_table, "oi");
-//     printf("Test 2 ok\n");
-//     printf("=====================\n");
-
-//     printf("Looking for element 'test', which is in the ST\n");
-//     stable_insert(s_table, "test");
-//     stable_insert(s_table, "test2");
-//     stable_find(s_table, "test");
-//     printf("Test 3 ok\n");
-//     printf("=====================\n");
-
-//     printf("Trying to print a key directly, should print 'test'\n");
-//     printf("%s\n", s_table->st[hash("test")]->key);
-//     printf("Test 4 ok\n");
-//     printf("=====================\n");
-
-//     printf("Test calling stable_visit to print keys in the ST, using our private visit function\n");
-//     stable_visit(s_table, visit);
-//     printf("=====================\n");
-
-//     stable_destroy(s_table);
-//     printf("Destroy ST\n");
-//     return 0;
-// }
-

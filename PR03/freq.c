@@ -2,9 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#define  UL  unsigned long 
+
+int great_len = 0;
 
 int visit(const char *key, EntryData *data) {
-    printf("Key: %s, Value: %d\n", key, data->i);
+    printf("%s", key);
+    for (UL i = 0; i < great_len-strlen(key)+1; i++) 
+        printf(" ");
+    printf("%d\n", data->i);
     return 1;
 }
 
@@ -14,6 +20,7 @@ int main(int argc, char** argv) {
     char* curr_word = malloc(256 * sizeof(char));
 
     SymbolTable stable = stable_create();
+    int curr_len = 0;
 
     while(!file_end) {
         char c = fgetc(input_text);
@@ -23,7 +30,6 @@ int main(int argc, char** argv) {
             insert.data = NULL;
             if (strlen(curr_word) > 0) 
                 insert = stable_insert(stable, curr_word);
-            // insert.new ? printf("New key\n") : printf("Duplicate\n");
 
             if (insert.new == 0) {
                 EntryData *old_data = stable_find(stable, curr_word);
@@ -50,15 +56,18 @@ int main(int argc, char** argv) {
         }
         else {
             int len = strlen(curr_word);
+            if (len > great_len)
+                great_len = len;
             curr_word[len] = c;
             curr_word[len+1] = '\0';
+            if (curr_len > great_len)
+                great_len = curr_len;
             continue;
         }
     }
 
-    printf("Test calling stable_visit to print keys in the ST\n");
+    great_len++;
     stable_visit(stable, visit);
-    printf("=====================\n");
 
     (void)argc;
     return 0;
