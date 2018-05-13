@@ -10,6 +10,7 @@ stable
 freq
 
 # Global
+*.tar.gz
 *.tar.tgz
 *.o
 *.out
