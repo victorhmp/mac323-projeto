@@ -6,6 +6,14 @@
 
 int great_len = 0;
 
+int cmpfunc(const void *a1, const void *b1) {
+    Node *a = (Node*)a1, *b = (Node*)b1;
+    int c = strcmp(a->key, b->key);
+    return c;
+    if (c <= 0) return 0;
+    else return 1;
+}
+
 int visit(const char *key, EntryData *data) {
     printf("%s", key);
     for (UL i = 0; i < great_len-strlen(key)+1; i++) 
@@ -65,8 +73,8 @@ int main(int argc, char** argv) {
             continue;
         }
     }
-
     great_len++;
+    //qsort(a, M, sizeof(Node*), cmpfunc);
     stable_visit(stable, visit);
 
     (void)argc;

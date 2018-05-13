@@ -2,7 +2,7 @@
 #include <string.h>
 #include "stable.h"
 #include <stdio.h>
-#define  M  499
+#define  M  2
 
 // hash function
 int hash(const char *key) {
@@ -93,11 +93,17 @@ EntryData *stable_find(SymbolTable table, const char *key){
     return NULL;
 }
 
+void recurs_visit(Node *node, int (*visit)(const char *key, EntryData *data)) {
+    visit(node->key, node->val);
+    if (node->prev) recurs_visit(node->prev, visit);
+}
+
 int stable_visit(SymbolTable table, 
                     int (*visit)(const char *key, EntryData *data)) {
     for (unsigned int i = 0; i < M; i++) {
-        if (table->st[i] != NULL)
-            visit(table->st[i]->key, table->st[i]->val);
+        /*if (table->st[i] != NULL)
+            visit(table->st[i]->key, table->st[i]->val);*/
+        if (table->st[i] != NULL) recurs_visit(table->st[i], visit);
     }
 
     return 1;
