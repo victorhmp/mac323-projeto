@@ -1,7 +1,7 @@
+#include "../include/stable.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "../include/stable.h"
 
 #define  M 7919
 
@@ -97,16 +97,22 @@ EntryData *stable_find(SymbolTable table, const char *key){
     return NULL;
 }
 
-void recurs_visit(Node *node, int (*visit)(const char *key, EntryData *data)) {
-    visit(node->key, node->val);
-    if (node->prev) recurs_visit(node->prev, visit);
+int recurs_visit(Node *node, int (*visit)(const char *key, EntryData *data)) {
+    int visit_res = visit(node->key, node->val);
+    if (visit_res == 0) return 0;
+    if (node->prev) {
+        recurs_visit(node->prev, visit);
+    }
+    return 1;
 }
 
 int stable_visit(SymbolTable table, 
                     int (*visit)(const char *key, EntryData *data)) {
     for (unsigned int i = 0; i < M; i++) {
-        if (table->st[i] != NULL) 
-            recurs_visit(table->st[i], visit);
+        if (table->st[i] != NULL){ 
+            int visit_res = recurs_visit(table->st[i], visit);
+            if(visit_res == 0) return 0;
+        }
     }
 
     return 1;

@@ -25,9 +25,10 @@ int compare(const void *s1, const void *s2) {
 }
 
 int visit(const char *key, EntryData *data) {
+    if (key == NULL) return 0;
+
     helper[num_keys].key = key;
     helper[num_keys].data = data;
-
     num_keys++;
     return 1;
 }
@@ -93,10 +94,13 @@ int main(int argc, char** argv) {
         }
     }
     great_len++;
-    stable_visit(stable, visit);
-    qsort(helper, num_keys, sizeof(struct table_element), compare);
-
-    print_in_order(helper);
+    int visit_result = stable_visit(stable, visit);
+    if (visit_result){
+        qsort(helper, num_keys, sizeof(struct table_element), compare);
+        print_in_order(helper);
+    }
+    else 
+        printf("Error while visiting all keys\n");
 
     stable_destroy(stable);
     (void)argc;
