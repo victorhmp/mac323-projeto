@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "stable.h"
 #include <stdio.h>
+#include "../include/stable.h"
+
 #define  M 7919
 
 // hash function

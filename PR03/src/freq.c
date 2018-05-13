@@ -1,5 +1,6 @@
-#include "stable.c"
+#include "../include/stable.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
