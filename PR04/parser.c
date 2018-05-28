@@ -1,5 +1,12 @@
 /*
     parser.c
+
+    WHAT'S MISSING:
+        - Managing strings and labels correctly
+        - Dealing with comments
+        - Errors
+        - Correct output
+        - Checking if label is according to convention
 */
 
 #include <stdio.h>
@@ -27,10 +34,7 @@ static int type_cmp(OperandType required, OperandType found) {
 }
 
 static int equal_types(OperandType required[], OperandType found[]) {
-    /*
-        { .name = "IS",   .opcode = IS,   .opd_types = { REGISTER | TETRABYTE | NEG_NUMBER, OP_NONE, OP_NONE } },
-        { .name = "TETRA",.opcode = TETRA,.opd_types = { TETRABYTE | NEG_NUMBER, OP_NONE, OP_NONE } },
-    */
+
     if (required[0] == (REGISTER | TETRABYTE | NEG_NUMBER)) {
         if (type_cmp(required[1], found[1]) && type_cmp(required[2], found[2])) {
             if (type_cmp(REGISTER, found[0])|| type_cmp(TETRABYTE, found[0]) || type_cmp(NEG_NUMBER, found[0]))
@@ -95,6 +99,7 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
     int word_count = 1, label = 0, operator = 0;
     OperandType operands_required[3],
                 operands_found[] = {OP_NONE, OP_NONE, OP_NONE};
+    int op_on_first = 0;
     
     do {
         // this block works the current character
@@ -118,6 +123,7 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                     printf("%s está em optable\n", curr_word);
                     operator = 1;
                     FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
+                    op_on_first = 1;
                 }
                 else {
                     printf("%s NÃO está em optable\n", curr_word);
@@ -133,12 +139,20 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                 else {
                     printf("%s NÃO está em optable\n", curr_word);
                     if (operator != 1) printf("ERRO: nenhum operador\n");; // ERROR here
+                    if (op_on_first) {
+                        if (!(operands_found[0] = find_type(curr_word)))
+                        ; // ERROR here;
+                    }
                 }
                 break;
             case 3:
                 if (OPTABLE) {
                     // printf("%s está em optable\n", curr_word);
                     // ERROR here;
+                }
+                else if (op_on_first) {
+                    if (!(operands_found[1] = find_type(curr_word)))
+                    ; // ERROR here;
                 }
                 else if (!(operands_found[0] = find_type(curr_word)))
                 ; // ERROR here; 
@@ -147,6 +161,10 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                 if (OPTABLE) {
                     // printf("%s está em optable\n", curr_word);
                     // ERROR here;
+                }
+                else if (op_on_first) {
+                    if (!(operands_found[2] = find_type(curr_word)))
+                    ; // ERROR here;
                 }
                 else if (!(operands_found[1] = find_type(curr_word)))
                 ; // ERROR here; 
@@ -182,6 +200,10 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
 }
 
 int main() {
-    parse("label DIV $0 2");
+    parse("ADD $3,$3,1");
+    printf("\n\n");
+    parse("MUL $0,$2,$3");
+    printf("\n\n");
+    parse("DIV $0, 2");
     return 0;
 }
