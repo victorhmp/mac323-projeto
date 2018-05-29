@@ -2,11 +2,8 @@
     parser.c
 
     WHAT'S MISSING:
-        - Managing strings and labels correctly
-        - Dealing with comments
-        - Errors
-        - Correct output
-        - Checking if label is according to convention
+        - Managing strings and labels correctly (M)
+        - Errors (M)
 */
 
 #include <stdio.h>
@@ -72,7 +69,7 @@ static OperandType find_type(const char *w) {
             return REGISTER;
         }
     }
-    else if (isdigit(*w) || *w == '-') {
+    else if (isdigit(*w) || *w == '_') {
         int is_number = 1;
         while (!*w) {
             if (!isdigit(*w)) {
@@ -91,22 +88,43 @@ static OperandType find_type(const char *w) {
     return 0;
 }
 
+int check_label(const char *w) {
+
+    if (!(*w == '_' || isalpha(*w)))
+        return 0;
+    w++;
+
+    while (*w != '\0') {
+        if (!(*w == '_' || isalpha(*w) || isdigit(*w)))
+            return 0;
+        w++;
+    }
+    return 1;
+}
+
 int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
           const char **errptr*/) {
-
+    
+    printf("%s\n\n", s);
     char *curr_word = malloc(sizeof(char));
     char *word_pointer = curr_word;
     int word_count = 1, label = 0, operator = 0;
     OperandType operands_required[3],
                 operands_found[] = {OP_NONE, OP_NONE, OP_NONE};
     int op_on_first = 0;
+    int comment = 0;
     
     do {
         // this block works the current character
-        if (!(isblank(*s) || *s == ',' || *s == '\0')) { 
+        if (!(isblank(*s) || *s == ',' || *s == '\0') || comment) { 
             *word_pointer++ = *s++;
             continue;
-        } else {
+        } 
+        else if (*s == '*') {
+            comment = 1;
+            continue;
+        }
+        else {
             *word_pointer++ = '\0';
             s++;
         }
@@ -127,6 +145,8 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                 }
                 else {
                     printf("%s NÃO está em optable\n", curr_word);
+                    if (!check_label(curr_word))
+                    printf("nao pode esse label\n"); // ERROR here
                     label = 1; // if first word is no operator, we assume it is a label
                 }
                 break;
@@ -174,6 +194,8 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                     // printf("%s está em optable\n", curr_word);
                     // ERROR here;
                 }
+                else if (op_on_first)
+                ; // ERROR here;
                 else if (!(operands_found[2] = find_type(curr_word)))
                 ; // ERROR here; 
                 break;
@@ -200,10 +222,10 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
 }
 
 int main() {
-    parse("ADD $3,$3,1");
+    parse("3hello PUSH $4 *sbcwoic");
     printf("\n\n");
-    parse("MUL $0,$2,$3");
+    /*parse("MUL $0,$2,$3");
     printf("\n\n");
-    parse("DIV $0, 2");
+    parse("DIV $0, 2");*/
     return 0;
 }
