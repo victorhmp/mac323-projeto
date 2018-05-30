@@ -102,7 +102,7 @@ int check_label(const char *w) {
     return 1;
 }
 
-int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
+int parse(const char *s /*, SymbolTable al_table*/, Instruction **instr/*,
           const char **errptr*/) {
     
     printf("%s\n\n", s);
@@ -113,6 +113,8 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                 operands_found[] = {OP_NONE, OP_NONE, OP_NONE};
     int op_on_first = 0;
     int comment = 0;
+
+    Instruction a;
     
     do {
         // this block works the current character
@@ -142,62 +144,98 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
                     operator = 1;
                     FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
                     op_on_first = 1;
+                    a.op = OPTABLE;
                 }
                 else {
                     printf("%s NÃO está em optable\n", curr_word);
-                    if (!check_label(curr_word))
-                    printf("nao pode esse label\n"); // ERROR here
+                    if (!check_label(curr_word)) {  
+                        printf("nao pode esse label\n"); // ERROR here
+                        return 0;
+                    }
                     label = 1; // if first word is no operator, we assume it is a label
+                    char label_to_instr[strlen(curr_word)+1];
+                    a.label = curr_word;
                 }
                 break;
             case 2:
                 if (OPTABLE) {
                     printf("%s está em optable\n", curr_word);
-                    if (label != 1) printf("erro: 2 operadores\n"); // ERROR here
+                    if (label != 1) {
+                        printf("erro: 2 operadores\n"); // ERROR here
+                        return 0;
+                    }
                     FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
+                    a.op = OPTABLE;
                 }
                 else {
                     printf("%s NÃO está em optable\n", curr_word);
-                    if (operator != 1) printf("ERRO: nenhum operador\n");; // ERROR here
+                    if (operator != 1) {
+                        printf("ERRO: nenhum operador\n"); // ERROR here
+                        return 0;
+                    }
                     if (op_on_first) {
                         if (!(operands_found[0] = find_type(curr_word)))
-                        ; // ERROR here;
+                            return 0; // ERROR here;
+                        Operand op = {operands_found[0], };
+                        op.value.str = curr_word;
+                        a.opds[0] = &op;
                     }
                 }
                 break;
             case 3:
                 if (OPTABLE) {
                     // printf("%s está em optable\n", curr_word);
-                    // ERROR here;
+                    return 0;// ERROR here;
                 }
                 else if (op_on_first) {
                     if (!(operands_found[1] = find_type(curr_word)))
-                    ; // ERROR here;
+                        return 0; // ERROR here;
+                    Operand op = {operands_found[1], };
+                        op.value.str = curr_word;
+                        a.opds[1] = &op;
                 }
-                else if (!(operands_found[0] = find_type(curr_word)))
-                ; // ERROR here; 
+                else {
+                    if (!(operands_found[0] = find_type(curr_word)))
+                        return 0; // ERROR here; 
+                    Operand op = {operands_found[0], };
+                        op.value.str = curr_word;
+                        a.opds[0] = &op;
+                }
                 break;
             case 4:
                 if (OPTABLE) {
                     // printf("%s está em optable\n", curr_word);
-                    // ERROR here;
+                    return 0;// ERROR here;
                 }
                 else if (op_on_first) {
                     if (!(operands_found[2] = find_type(curr_word)))
-                    ; // ERROR here;
+                        return 0; // ERROR here;
+                    Operand op = {operands_found[2], };
+                        op.value.str = curr_word;
+                        a.opds[2] = &op;
                 }
-                else if (!(operands_found[1] = find_type(curr_word)))
-                ; // ERROR here; 
+                else {
+                    if (!(operands_found[1] = find_type(curr_word)))
+                        return 0; // ERROR here; 
+                    Operand op = {operands_found[1], };
+                        op.value.str = curr_word;
+                        a.opds[1] = &op;
+                }
                 break;
             case 5:
                  if (OPTABLE) {
                     // printf("%s está em optable\n", curr_word);
-                    // ERROR here;
+                    return 0;// ERROR here;
                 }
                 else if (op_on_first)
-                ; // ERROR here;
-                else if (!(operands_found[2] = find_type(curr_word)))
-                ; // ERROR here; 
+                    return 0; // ERROR here;
+                else {
+                    if (!(operands_found[2] = find_type(curr_word)))
+                        return 0; // ERROR here; 
+                    Operand op = {operands_found[2], };
+                        op.value.str = curr_word;
+                        a.opds[2] = &op;
+                }
                 break;
             default:
                 printf("erro: número excessivo de elementos\n");
@@ -212,6 +250,7 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
     int correct_operands;
 
     if ((correct_operands = equal_types(operands_required, operands_found))) {
+        *instr = &a;
         printf("operands are of correct type\n");
         return 1;
     }
@@ -222,7 +261,8 @@ int parse(const char *s /*, SymbolTable al_table, Instruction **instr,
 }
 
 int main() {
-    parse("3hello PUSH $4 *sbcwoic");
+    Instruction **instr = malloc(sizeof(Instruction**));
+    parse("3hello PUSH $4 *sbcwoic", instr);
     printf("\n\n");
     /*parse("MUL $0,$2,$3");
     printf("\n\n");
