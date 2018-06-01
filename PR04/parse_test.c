@@ -1,6 +1,6 @@
 #include "parser.c"
 #include "buffer.c"
-// #include "stable.c"
+// #include "asmtypes.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +20,17 @@ Instruction *instr = 0;
 
 // }
 
+char *get_type_string(Operand *operand) {
+    if (operand->type == REGISTER) 
+      return "Register";
+    if (operand->type == LABEL) 
+      return "Label";
+    if (operand->type == NUMBER_TYPE) 
+      return "Number";
+    if (operand->type == STRING) 
+      return "String";
+}
+
 int main(int argc, char** argv) {
   FILE* input_text = fopen(argv[1], "r");
   Buffer *b = buffer_create(sizeof(char));
@@ -36,7 +47,8 @@ int main(int argc, char** argv) {
     Instruction f = **instr;
     
     if (!parse_result) {
-        printf("Error on: %s\n", errptr);
+        printf("Error on: %s\n", *errptr);
+        break;
     }
     else {
 
@@ -65,7 +77,14 @@ int main(int argc, char** argv) {
           printf("label    = %s\n", line_label);
       }
       printf("operator = %s\n", f.op->name);
-      printf("operands = not implemented yet.\n\n");
+      printf("operands = ");
+
+      for (int i=0;i<3;i++) {
+        if (f.opds[i]->value.str != NULL) {
+          printf("%s ,", f.opds[i]->value.str);
+        }
+      }
+      printf("\n\n");
 
       free(errptr);
       free(instr);
