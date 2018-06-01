@@ -11,10 +11,12 @@
 #include <ctype.h>
 #include "parser.h"
 #include "optable.c"
+#include "stable.c"
 
 #define  OPTABLE     optable_find(curr_word)
 #define  FOR_ASSIGN  for (int i = 0; i < 3; i++)
 
+// auxiliary function
 static int type_cmp(OperandType required, OperandType found) {
 
     int equal = 1;
@@ -30,11 +32,12 @@ static int type_cmp(OperandType required, OperandType found) {
     return equal;
 }
 
+// check if required and found types match
 static int equal_types(OperandType required[], OperandType found[]) {
 
     if (required[0] == (REGISTER | TETRABYTE | NEG_NUMBER)) {
         if (type_cmp(required[1], found[1]) && type_cmp(required[2], found[2])) {
-            if (type_cmp(REGISTER, found[0])|| type_cmp(TETRABYTE, found[0]) || type_cmp(NEG_NUMBER, found[0]))
+            if (type_cmp(REGISTER, found[0]) || type_cmp(TETRABYTE, found[0]) || type_cmp(NEG_NUMBER, found[0]))
                 return 1;
             else return 0;
         } else return 0;
@@ -53,7 +56,16 @@ static int equal_types(OperandType required[], OperandType found[]) {
     }
 }
 
-static OperandType find_type(const char *w) {
+// returns input's type or zero if it has no type
+static OperandType find_type(const char *w, SymbolTable al_table) {
+
+    EntryData *data = stable_find(al_table, w);
+
+    if (data) {
+        if (*(data->opd->value.str) == '\"') return STRING;
+        return LABEL;
+    }
+
     const char *s = w;
     if (*w == '$') {
         w++;
@@ -65,7 +77,7 @@ static OperandType find_type(const char *w) {
             }
         }
         if (is_register) {
-            printf("%s is register\n", s);
+            //printf("%s is register\n", s);
             return REGISTER;
         }
     }
@@ -79,15 +91,16 @@ static OperandType find_type(const char *w) {
             w++;
         }
         if (is_number) {
-            printf("%s is number\n", s);
+            //printf("%s is number\n", s);
             return BYTE1;
         } else {
-            printf("%s is NOT number\n", s);
+            //printf("%s is NOT number\n", s);
         }
     }
     return 0;
 }
 
+// check if label matches required standards 
 int check_label(const char *w) {
 
     if (!(*w == '_' || isalpha(*w)))
@@ -102,22 +115,28 @@ int check_label(const char *w) {
     return 1;
 }
 
-int parse(const char *s /*, SymbolTable al_table*/, Instruction **instr/*,
-          const char **errptr*/) {
-    
-    printf("%s\n\n", s);
-    char *curr_word = malloc(sizeof(char));
-    char *word_pointer = curr_word;
-    int word_count = 1, label = 0, operator = 0;
-    OperandType operands_required[3],
-                operands_found[] = {OP_NONE, OP_NONE, OP_NONE};
-    int op_on_first = 0;
-    int comment = 0;
+int parse(const char *s, SymbolTable al_table, Instruction **instr,
+          const char **errptr) {
 
+    char *curr_word = malloc(sizeof(char)),
+         *word_pointer = curr_word;
+
+    int word_count = 1,                 
+        label = 0,                  // 1 if instruction contains a label
+        operator = 0,               // 1 if operator is found
+        op_on_first = 0,            // 1 if first string is operator, not label  
+        comment = 0;                // 1 if remaining characters are a comment (marked by *)
+
+    OperandType operands_required[3], 
+                operands_found[] =
+                {OP_NONE, OP_NONE, OP_NONE};
+
+    // Instruction struct to be returned at the end of the function
     Instruction a;
     
     do {
-        // this block works the current character
+
+        // Simply works the current character (checks end, comment, etc.)
         if (!(isblank(*s) || *s == ',' || *s == '\0') || comment) { 
             *word_pointer++ = *s++;
             continue;
@@ -137,135 +156,221 @@ int parse(const char *s /*, SymbolTable al_table*/, Instruction **instr/*,
             continue;
         }
 
+        // parsing depends on the word count.
+        // OPTABLE == true means that current word is an operator 
         switch (word_count) {
+
+            // first word: either a label or an operator
             case 1:
                 if (OPTABLE) {
-                    printf("%s está em optable\n", curr_word);
+
                     operator = 1;
-                    FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
+
+                    // assigns required operands for later check
+                    FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i]; 
                     op_on_first = 1;
-                    a.op = OPTABLE;
+
+                    // instr operator is the one returned by optable_find()
+                    a.op = OPTABLE;                                       
                 }
                 else {
-                    printf("%s NÃO está em optable\n", curr_word);
+
+                    // check if label matches required standards
+                    // if it doesn't, then the instruction is invalid
                     if (!check_label(curr_word)) {  
-                        printf("nao pode esse label\n"); // ERROR here
+                        *errptr = curr_word;
                         return 0;
                     }
-                    label = 1; // if first word is no operator, we assume it is a label
-                    char label_to_instr[strlen(curr_word)+1];
+                    label = 1;
+
+                    // attempt to get label and assing in to instr... not working so far                           
+                    // char label_to_instr[strlen(curr_word)+1];                
                     a.label = curr_word;
+                    *instr = &a;
                 }
                 break;
+
+            // second word: either an operator (if) or an operand (else)
             case 2:
                 if (OPTABLE) {
-                    printf("%s está em optable\n", curr_word);
+
+                    // if second word is an operator, than the first one must be a label
                     if (label != 1) {
-                        printf("erro: 2 operadores\n"); // ERROR here
+                        *errptr = curr_word; // ERROR here
                         return 0;
                     }
+
+                    // assigns required operands for later check
                     FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
                     a.op = OPTABLE;
                 }
                 else {
-                    printf("%s NÃO está em optable\n", curr_word);
+
+                    // if first and second words are not operators, instruction is invalid
                     if (operator != 1) {
-                        printf("ERRO: nenhum operador\n"); // ERROR here
+                        *errptr = curr_word; // ERROR here
                         return 0;
                     }
-                    if (op_on_first) {
-                        if (!(operands_found[0] = find_type(curr_word)))
-                            return 0; // ERROR here;
-                        Operand op = {operands_found[0], };
-                        op.value.str = curr_word;
-                        a.opds[0] = &op;
+
+                    // find_type() returns 0 if word has no type (error)
+                    if (!(operands_found[0] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
+                        return 0; // ERROR here;
                     }
+
+                    // attempt to assign operand to instr... not working so far
+                    Operand op = {operands_found[0], };
+                    op.value.str = curr_word;
+                    a.opds[0] = &op;
                 }
                 break;
+
+            /* from third word on: if it's an operator, instruction is invalid */
+
+            // if operator was given in the first word, third word is the second operand
+            // otherwise, it is the first one
             case 3:
                 if (OPTABLE) {
-                    // printf("%s está em optable\n", curr_word);
+                    *errptr = curr_word;
                     return 0;// ERROR here;
                 }
                 else if (op_on_first) {
-                    if (!(operands_found[1] = find_type(curr_word)))
+
+                    if (!(operands_found[1] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
                         return 0; // ERROR here;
+                    }
+
+                    // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[1], };
-                        op.value.str = curr_word;
-                        a.opds[1] = &op;
+                    op.value.str = curr_word;
+                    a.opds[1] = &op;
                 }
                 else {
-                    if (!(operands_found[0] = find_type(curr_word)))
+                    if (!(operands_found[0] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
                         return 0; // ERROR here; 
+                    }
+
+                    // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[0], };
-                        op.value.str = curr_word;
-                        a.opds[0] = &op;
+                    op.value.str = curr_word;
+                    a.opds[0] = &op;
                 }
                 break;
+
+            // if operator was given in the first word, third word is the third operand
+            // otherwise, it is the second one
             case 4:
                 if (OPTABLE) {
-                    // printf("%s está em optable\n", curr_word);
+                    *errptr = curr_word;
                     return 0;// ERROR here;
                 }
                 else if (op_on_first) {
-                    if (!(operands_found[2] = find_type(curr_word)))
+
+                    if (!(operands_found[2] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
                         return 0; // ERROR here;
+                    }
+
+                    // attempt to assign operand to instr... not working so far    
                     Operand op = {operands_found[2], };
-                        op.value.str = curr_word;
-                        a.opds[2] = &op;
+                    op.value.str = curr_word;
+                    a.opds[2] = &op;
                 }
                 else {
-                    if (!(operands_found[1] = find_type(curr_word)))
+
+                    if (!(operands_found[1] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
                         return 0; // ERROR here; 
+                    }
+
+                    // attempt to assign operand to instr... not working so far   
                     Operand op = {operands_found[1], };
-                        op.value.str = curr_word;
-                        a.opds[1] = &op;
+                    op.value.str = curr_word;
+                    a.opds[1] = &op;
                 }
                 break;
+
+            // if operator was given in the first word, there is an error
+            // otherwise, it is the third operand
             case 5:
                  if (OPTABLE) {
-                    // printf("%s está em optable\n", curr_word);
+                    *errptr = curr_word;
                     return 0;// ERROR here;
                 }
-                else if (op_on_first)
+                else if (op_on_first) {   // forth operand: error
+                    *errptr = curr_word;
                     return 0; // ERROR here;
+                }
                 else {
-                    if (!(operands_found[2] = find_type(curr_word)))
-                        return 0; // ERROR here; 
+
+                    if (!(operands_found[2] = find_type(curr_word, al_table))) {
+                        *errptr = curr_word;
+                        return 0; // ERROR here;
+                    }
+        
+                    // attempt to assign operand to instr... not working so far     
                     Operand op = {operands_found[2], };
-                        op.value.str = curr_word;
-                        a.opds[2] = &op;
+                    op.value.str = curr_word;
+                    a.opds[2] = &op;
                 }
                 break;
+
+            // instruction longer than 6 words is invalid (exception: strings)
             default:
-                printf("erro: número excessivo de elementos\n");
+                *errptr = curr_word;
                 break;
         }
 
+        // sets variables to a new word
         curr_word = word_pointer;
         word_count++;
         
     } while (*(s-1));
 
+    // check if operands found match the types required by the operator
     int correct_operands;
 
     if ((correct_operands = equal_types(operands_required, operands_found))) {
+
+        // attempt to pass temporary instr to the returned one... not working so far
         *instr = &a;
-        printf("operands are of correct type\n");
         return 1;
     }
     else {
-        printf("operands are NOT of correct type\n");
+        *errptr = curr_word;
         return 0;
     }
 }
 
 int main() {
+
+    SymbolTable al_table = stable_create();
+    const char** errptr = malloc(sizeof(const char**));
+
     Instruction **instr = malloc(sizeof(Instruction**));
-    parse("3hello PUSH $4 *sbcwoic", instr);
-    printf("\n\n");
-    /*parse("MUL $0,$2,$3");
-    printf("\n\n");
-    parse("DIV $0, 2");*/
+    printf("line     = hey MUL $3 $4 $7\n");
+    parse("hey MUL $3 $4 $7", al_table, instr, errptr);
+
+    Instruction f = **instr;
+
+    char attempt4[strlen(f.label)+1];
+    strcpy(attempt4, f.label);
+
+    char attempt1[strlen(f.opds[0]->value.str)+1];
+    strcpy(attempt1, f.opds[0]->value.str);
+
+    char attempt2[strlen(f.opds[1]->value.str)+1];
+    strcpy(attempt2, f.opds[1]->value.str);
+
+    char attempt3[strlen(f.opds[2]->value.str)+1];
+    strcpy(attempt3, f.opds[2]->value.str);
+
+    printf("label    = \"%s\"\n", attempt4);
+    printf("operando 1: %s\n", attempt1);
+    printf("operando 2: %s\n", attempt2);
+    printf("operando 3: %s\n", attempt3);
+
     return 0;
 }
