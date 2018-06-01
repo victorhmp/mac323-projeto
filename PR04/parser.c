@@ -134,6 +134,9 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
     // Instruction struct to be returned at the end of the function
     Instruction a;
     a.label = NULL;
+    a.opds[0] = malloc(sizeof(Operand));
+    a.opds[1] = malloc(sizeof(Operand));
+    a.opds[2] = malloc(sizeof(Operand));
     
     do {
 
@@ -222,7 +225,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[0], };
                     op.value.str = curr_word;
-                    a.opds[0] = &op;
+                    *a.opds[0] = op;
                 }
                 break;
 
@@ -245,7 +248,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[1], };
                     op.value.str = curr_word;
-                    a.opds[1] = &op;
+                    *a.opds[1] = op;
                 }
                 else {
                     if (!(operands_found[0] = find_type(curr_word, al_table))) {
@@ -256,7 +259,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[0], };
                     op.value.str = curr_word;
-                    a.opds[0] = &op;
+                    *a.opds[0] = op;
                 }
                 break;
 
@@ -277,7 +280,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far    
                     Operand op = {operands_found[2], };
                     op.value.str = curr_word;
-                    a.opds[2] = &op;
+                    *a.opds[2] = op;
                 }
                 else {
 
@@ -289,7 +292,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far   
                     Operand op = {operands_found[1], };
                     op.value.str = curr_word;
-                    a.opds[1] = &op;
+                    *a.opds[1] = op;
                 }
                 break;
 
@@ -314,7 +317,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // attempt to assign operand to instr... not working so far     
                     Operand op = {operands_found[2], };
                     op.value.str = curr_word;
-                    a.opds[2] = &op;
+                    *a.opds[2] = op;
                 }
                 break;
 
