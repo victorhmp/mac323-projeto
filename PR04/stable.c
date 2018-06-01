@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define  M 7919
+#define  M 256
 
 // hash function
 int hash(const char *key) {
