@@ -133,6 +133,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
     // Instruction struct to be returned at the end of the function
     Instruction a;
+    a.label = NULL;
     
     do {
 
@@ -344,33 +345,33 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
     }
 }
 
-int main() {
+// int main() {
 
-    SymbolTable al_table = stable_create();
-    const char** errptr = malloc(sizeof(const char**));
+//     SymbolTable al_table = stable_create();
+//     const char** errptr = malloc(sizeof(const char**));
 
-    Instruction **instr = malloc(sizeof(Instruction**));
-    printf("line     = hey MUL $3 $4 $7\n");
-    parse("hey MUL $3 $4 $7", al_table, instr, errptr);
+//     Instruction **instr = malloc(sizeof(Instruction**));
+//     printf("line     = hey MUL $3 $4 $7\n");
+//     parse("hey MUL $3 $4 $7", al_table, instr, errptr);
 
-    Instruction f = **instr;
+//     Instruction f = **instr;
 
-    char attempt4[strlen(f.label)+1];
-    strcpy(attempt4, f.label);
+//     char attempt4[strlen(f.label)+1];
+//     strcpy(attempt4, f.label);
 
-    char attempt1[strlen(f.opds[0]->value.str)+1];
-    strcpy(attempt1, f.opds[0]->value.str);
+//     char attempt1[strlen(f.opds[0]->value.str)+1];
+//     strcpy(attempt1, f.opds[0]->value.str);
 
-    char attempt2[strlen(f.opds[1]->value.str)+1];
-    strcpy(attempt2, f.opds[1]->value.str);
+//     char attempt2[strlen(f.opds[1]->value.str)+1];
+//     strcpy(attempt2, f.opds[1]->value.str);
 
-    char attempt3[strlen(f.opds[2]->value.str)+1];
-    strcpy(attempt3, f.opds[2]->value.str);
+//     char attempt3[strlen(f.opds[2]->value.str)+1];
+//     strcpy(attempt3, f.opds[2]->value.str);
 
-    printf("label    = \"%s\"\n", attempt4);
-    printf("operando 1: %s\n", attempt1);
-    printf("operando 2: %s\n", attempt2);
-    printf("operando 3: %s\n", attempt3);
+//     printf("label    = \"%s\"\n", attempt4);
+//     printf("operando 1: %s\n", attempt1);
+//     printf("operando 2: %s\n", attempt2);
+//     printf("operando 3: %s\n", attempt3);
 
-    return 0;
-}
+//     return 0;
+// }
