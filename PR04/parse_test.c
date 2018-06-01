@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
 
     while (read_line(input_text, b)) {
         current_line = b->data;
-        // printf("%s\n", current_line);
 
         const char **errptr = malloc(sizeof(const char **));
         Instruction **instr = malloc(sizeof(Instruction **));
@@ -69,7 +68,7 @@ int main(int argc, char **argv) {
                 }
             }
 
-            printf("line     = %s", current_line);
+            printf("line     = %s\n", current_line);
             if (f.label == NULL) {
                 f.label = "n/a";
                 printf("label    = n/a\n");
@@ -84,8 +83,9 @@ int main(int argc, char **argv) {
 
             for (int i = 0; i < 3; i++) {
                 if (f.opds[i]->value.str != NULL) {
-                    printf("%s (%s), ", get_type_string(f.opds[i]), f.opds[i]->value.str);
+                    printf("%s (%s)", get_type_string(f.opds[i]), f.opds[i]->value.str);
                 }
+                if (i != 2 && f.opds[i+1]->value.str != NULL) printf(", ");
             }
             printf("\n\n");
 
