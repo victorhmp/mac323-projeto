@@ -1,3 +1,7 @@
+/*
+    parse_test.c
+*/
+
 #include "parser.c"
 #include "buffer.c"
 // #include "asmtypes.h"
@@ -10,6 +14,7 @@
 int is_over;
 int chars_in_line;
 char *current_line = 0;
+int lineno = 1;
 
 /* Variables for parser return and alias_table */
 int parse_result;
@@ -25,7 +30,7 @@ char *get_type_string(Operand *operand) {
         return "Register";
     if (operand->type == LABEL)
         return "Label";
-    if (operand->type == NUMBER_TYPE)
+    if (operand->type == BYTE1)
         return "Number";
     if (operand->type == STRING)
         return "String";
@@ -34,6 +39,7 @@ char *get_type_string(Operand *operand) {
 }
 
 int main(int argc, char **argv) {
+
     FILE *input_text = fopen(argv[1], "r");
     Buffer *b = buffer_create(sizeof(char));
     SymbolTable stable = stable_create();
@@ -45,13 +51,29 @@ int main(int argc, char **argv) {
         Instruction **instr = malloc(sizeof(Instruction **));
         parse_result = parse(current_line, stable, instr, errptr);
 
-        Instruction f = **instr;
+        Instruction f;
+        if (parse_result == 1) f = **instr;
 
         if (!parse_result) {
-            printf("Error on: %s\n", *errptr);
+
+            printf("line %d: %s\n", lineno, current_line);
+
+            long int dist = *errptr-current_line;
+            if (lineno < 10) dist += 7;
+            else dist += 8;
+            for (int i = 0; i < dist; i++) printf(" ");
+            printf("^\n");
+            printf("%s", get_error_msg());
+            
             break;
         }
         else {
+
+            if (parse_result == 2) {
+                free(errptr);
+                free(instr);
+                continue;
+            }
 
             if (strcmp(f.op->name, "IS") == 0) {
                 InsertionResult insert;
@@ -67,6 +89,9 @@ int main(int argc, char **argv) {
                     *(insert.data) = alias;
                 }
             }
+            else if (f.label != NULL) {
+                stable_insert(stable, f.label);
+            }
 
             printf("line     = %s\n", current_line);
             if (f.label == NULL) {
@@ -76,14 +101,16 @@ int main(int argc, char **argv) {
             else {
                 char line_label[strlen(f.label) + 1];
                 strcpy(line_label, f.label);
-                printf("label    = %s\n", line_label);
+                printf("label    = \"%s\"\n", line_label);
             }
             printf("operator = %s\n", f.op->name);
             printf("operands = ");
 
             for (int i = 0; i < 3; i++) {
                 if (f.opds[i]->value.str != NULL) {
-                    printf("%s (%s)", get_type_string(f.opds[i]), f.opds[i]->value.str);
+
+                    if (f.opds[i]->type == REGISTER) f.opds[i]->value.str++;
+                    printf("%s(%s)", get_type_string(f.opds[i]), f.opds[i]->value.str);
                 }
                 if (i != 2 && f.opds[i+1]->value.str != NULL) printf(", ");
             }
@@ -92,6 +119,7 @@ int main(int argc, char **argv) {
             free(errptr);
             free(instr);
         }
+        lineno++;
     }
 
     buffer_destroy(b);

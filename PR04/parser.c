@@ -1,9 +1,7 @@
 /*
     parser.c
 
-    WHAT'S MISSING:
-        - Managing strings and labels correctly (M)
-        - Errors (M)
+    LINES 66, 67
 */
 
 #include <stdio.h>
@@ -12,6 +10,7 @@
 #include "parser.h"
 #include "optable.c"
 #include "stable.c"
+#include "error.c"
 
 #define  OPTABLE     optable_find(curr_word)
 #define  FOR_ASSIGN  for (int i = 0; i < 3; i++)
@@ -62,8 +61,10 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
     EntryData *data = stable_find(al_table, w);
 
     if (data) {
-        if (*(data->opd->value.str) == '\"') return STRING;
-        return LABEL;
+        // não funciona porque não manipulou a EntryData
+        if (data->opd == NULL) return LABEL;
+        else if (*(data->opd->value.str) == '\"') return STRING;
+        else return data->opd->type;
     }
 
     const char *s = w;
@@ -81,7 +82,7 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
             return REGISTER;
         }
     }
-    else if (isdigit(*w) || *w == '_') {
+    else if (isdigit(*w) || *w == '-') {
         int is_number = 1;
         while (!*w) {
             if (!isdigit(*w)) {
@@ -93,8 +94,6 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
         if (is_number) {
             //printf("%s is number\n", s);
             return BYTE1;
-        } else {
-            //printf("%s is NOT number\n", s);
         }
     }
     return 0;
@@ -118,14 +117,15 @@ int check_label(const char *w) {
 int parse(const char *s, SymbolTable al_table, Instruction **instr,
           const char **errptr) {
 
-    char *curr_word = malloc(sizeof(char)),
+    char *curr_word = malloc(sizeof(char*)),
          *word_pointer = curr_word;
 
     int word_count = 1,                 
         label = 0,                  // 1 if instruction contains a label
         operator = 0,               // 1 if operator is found
         op_on_first = 0,            // 1 if first string is operator, not label  
-        comment = 0;                // 1 if remaining characters are a comment (marked by *)
+        comment = 0,                // 1 if remaining characters are a comment (marked by *)
+        str = 0;                    // 1 if operand is a string
 
     OperandType operands_required[3], 
                 operands_found[] =
@@ -142,9 +142,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
         // Simply works the current character (checks end, comment, etc.)
         if (!(isblank(*s) || *s == ',' || *s == '\0') || comment) { 
-            if (*s == '*') {
+            if (*s == '*')
                 comment = 1;
-            }
             *word_pointer++ = *s++;
             continue;
         } 
@@ -181,12 +180,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // check if label matches required standards
                     // if it doesn't, then the instruction is invalid
                     if (!check_label(curr_word)) {  
-                        *errptr = curr_word;
+                        set_error_msg("wrong label format\n");
+                        *errptr = s-strlen(curr_word);
                         return 0;
                     }
                     label = 1;
-
-                    // attempt to get label and assing in to instr... not working so far                           
+                          
                     // char label_to_instr[strlen(curr_word)+1];                
                     a.label = curr_word;
                     *instr = &a;
@@ -195,11 +194,13 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
             // second word: either an operator (if) or an operand (else)
             case 2:
+
                 if (OPTABLE) {
 
                     // if second word is an operator, than the first one must be a label
                     if (label != 1) {
-                        *errptr = curr_word; // ERROR here
+                        *errptr = s-strlen(curr_word); // ERROR here
+                        set_error_msg("misplaced operator\n");
                         return 0;
                     }
 
@@ -211,17 +212,18 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
                     // if first and second words are not operators, instruction is invalid
                     if (operator != 1) {
-                        *errptr = curr_word; // ERROR here
+                        set_error_msg("no operator found\n");
+                        *errptr = s-strlen(curr_word); // ERROR here
                         return 0;
                     }
 
                     // find_type() returns 0 if word has no type (error)
                     if (!(operands_found[0] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here;
                     }
 
-                    // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[0], };
                     op.value.str = curr_word;
                     *a.opds[0] = op;
@@ -234,28 +236,29 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
             // otherwise, it is the first one
             case 3:
                 if (OPTABLE) {
-                    *errptr = curr_word;
+                    set_error_msg("misplaced operator\n");
+                    *errptr = s-strlen(curr_word);
                     return 0;// ERROR here;
                 }
                 else if (op_on_first) {
 
                     if (!(operands_found[1] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here;
                     }
 
-                    // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[1], };
                     op.value.str = curr_word;
                     *a.opds[1] = op;
                 }
                 else {
                     if (!(operands_found[0] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here; 
                     }
 
-                    // attempt to assign operand to instr... not working so far
                     Operand op = {operands_found[0], };
                     op.value.str = curr_word;
                     *a.opds[0] = op;
@@ -266,17 +269,18 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
             // otherwise, it is the second one
             case 4:
                 if (OPTABLE) {
-                    *errptr = curr_word;
+                    set_error_msg("misplaced operator\n");
+                    *errptr = s-strlen(curr_word);
                     return 0;// ERROR here;
                 }
                 else if (op_on_first) {
 
                     if (!(operands_found[2] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here;
                     }
-
-                    // attempt to assign operand to instr... not working so far    
+   
                     Operand op = {operands_found[2], };
                     op.value.str = curr_word;
                     *a.opds[2] = op;
@@ -284,11 +288,11 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                 else {
 
                     if (!(operands_found[1] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here; 
                     }
-
-                    // attempt to assign operand to instr... not working so far   
+  
                     Operand op = {operands_found[1], };
                     op.value.str = curr_word;
                     *a.opds[1] = op;
@@ -299,21 +303,23 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
             // otherwise, it is the third operand
             case 5:
                  if (OPTABLE) {
-                    *errptr = curr_word;
+                    set_error_msg("misplaced operator\n");
+                    *errptr = s-strlen(curr_word);
                     return 0;// ERROR here;
                 }
                 else if (op_on_first) {   // forth operand: error
-                    *errptr = curr_word;
+                    set_error_msg("number of elements exceded\n");
+                    *errptr = s-strlen(curr_word);
                     return 0; // ERROR here;
                 }
                 else {
 
                     if (!(operands_found[2] = find_type(curr_word, al_table))) {
-                        *errptr = curr_word;
+                        set_error_msg("operand has no type\n");
+                        *errptr = s-strlen(curr_word);
                         return 0; // ERROR here;
                     }
-        
-                    // attempt to assign operand to instr... not working so far     
+           
                     Operand op = {operands_found[2], };
                     op.value.str = curr_word;
                     *a.opds[2] = op;
@@ -322,7 +328,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
             // instruction longer than 6 words is invalid (exception: strings)
             default:
-                *errptr = curr_word;
+                set_error_msg("number of elements exceded\n");
+                *errptr = s-strlen(curr_word);
                 break;
         }
 
@@ -335,14 +342,17 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
     // check if operands found match the types required by the operator
     int correct_operands;
 
-    if ((correct_operands = equal_types(operands_required, operands_found))) {
+    if (word_count == 1) {
+        return 2;
+    }
 
-        // attempt to pass temporary instr to the returned one... not working so far
+    if ((correct_operands = equal_types(operands_required, operands_found))) {
         *instr = &a;
         return 1;
     }
     else {
-        *errptr = curr_word;
+        set_error_msg("expected operand or wrong operand type\n");
+        *errptr = s-strlen(curr_word);
         return 0;
     }
 }

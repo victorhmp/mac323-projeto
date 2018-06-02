@@ -1,14 +1,6 @@
+* Teste
 a      IS      $0
-b      IS      $1
-c      IS      $2
-start  ADD     $0,$0,1 
-       MUL     $0,$2,$3
-       DIV     $0,$2,$3
-       MUL     $0,$2,$3
-       DIV     $0,$2,$3
-       MUL     $0,$2,$3
-       DIV     $0,$2,$3
-       MUL     $0,$2,$3
-       DIV     $0,$2,$3
-       MUL     $0,$2,$3
-       DIV     $0,$2,$3
+start  ADD     a,a,1
+       MUL     a,$2,$3     * Multiplica.
+       JMP     start
+       DIV     a,2
