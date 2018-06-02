@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            if (strcmp(f.op->name, "IS") == 0) {
+            else if (strcmp(f.op->name, "IS") == 0) {
                 InsertionResult insert;
                 insert.new = -1;
                 insert.data = NULL;
@@ -84,13 +84,13 @@ int main(int argc, char **argv) {
                 if (insert.new == 0)
                     printf("ERROR: Duplicate symbol\n");
                 else {
+                    printf("New entry.\n");
                     EntryData alias;
-                    alias.opd = f.opds[0];
+                    alias.str = f.opds[0]->value.str;
                     *(insert.data) = alias;
+
+                    printf("Just inserted %s with the key %s.\n", alias.str, f.label);
                 }
-            }
-            else if (f.label != NULL) {
-                stable_insert(stable, f.label);
             }
 
             printf("line     = %s\n", current_line);
@@ -108,8 +108,7 @@ int main(int argc, char **argv) {
 
             for (int i = 0; i < 3; i++) {
                 if (f.opds[i]->value.str != NULL) {
-
-                    if (f.opds[i]->type == REGISTER) f.opds[i]->value.str++;
+                    if (f.opds[i]->type == REGISTER) f.opds[i]->value.str++; 
                     printf("%s(%s)", get_type_string(f.opds[i]), f.opds[i]->value.str);
                 }
                 if (i != 2 && f.opds[i+1]->value.str != NULL) printf(", ");
