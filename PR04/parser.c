@@ -125,7 +125,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
         operator = 0,               // 1 if operator is found
         op_on_first = 0,            // 1 if first string is operator, not label  
         comment = 0,                // 1 if remaining characters are a comment (marked by *)
-        str = 0;                    // 1 if operand is a string
+        str = 0,                    // 1 if operand is a string
+        is = 0;                     // 1 if operator is IS
 
     OperandType operands_required[3], 
                 operands_found[] =
@@ -173,7 +174,10 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     op_on_first = 1;
 
                     // instr operator is the one returned by optable_find()
-                    a.op = OPTABLE;                                       
+                    a.op = OPTABLE;
+                    if (strcmp(curr_word, "IS") == 0) {
+                        is = 1;     
+                    }                                 
                 }
                 else {
 
@@ -207,6 +211,9 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     // assigns required operands for later check
                     FOR_ASSIGN operands_required[i] = OPTABLE->opd_types[i];
                     a.op = OPTABLE;
+                    if (strcmp(curr_word, "IS") == 0) {
+                        is = 1;     
+                    }   
                 }
                 else {
 
@@ -225,7 +232,11 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
 
                     Operand op = {operands_found[0], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[0] = op;
                 }
                 break;
@@ -338,6 +349,10 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
         word_count++;
         
     } while (*(s-1));
+
+    if (a.label != NULL && is == 0 && str == 0) {
+            stable_insert(al_table, a.label);
+    }
 
     // check if operands found match the types required by the operator
     int correct_operands;
