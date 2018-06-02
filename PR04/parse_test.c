@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
                 else {
                     printf("New entry.\n");
                     EntryData alias;
-                    alias.str = f.opds[0]->value.str;
+                    alias.opd = f.opds[0];
                     *(insert.data) = alias;
 
-                    printf("Just inserted %s with the key %s.\n", alias.str, f.label);
+                    printf("Just inserted %s, of type %s with the key %s.\n", alias.opd->value.str, get_type_string(alias.opd), f.label);
                 }
             }
 
