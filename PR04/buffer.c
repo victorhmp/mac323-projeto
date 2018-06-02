@@ -52,6 +52,7 @@ int read_line (FILE *input, Buffer *B) {
     in = (char)fgetc(input);
     if (in == '\n') {
       end_line = 1;
+      read_count++;
       break;
     }
     if (in == EOF) break;
