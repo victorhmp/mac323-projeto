@@ -47,7 +47,6 @@ static int equal_types(OperandType required[], OperandType found[]) {
             else return 0;
         } else return 0;
     } else {
-        int equal = 1;
         for (int i = 0; i < 3; i++) {
             if (!type_cmp(required[i], found[i])) return 0;
         }
@@ -67,7 +66,6 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
         else return data->opd->type;
     }
 
-    const char *s = w;
     if (*w == '$') {
         w++;
         int is_register = 1;
@@ -232,7 +230,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here;
                     }
 
-                    Operand op = {operands_found[0], };
+                    Operand op;
+                    op.type = operands_found[0];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
@@ -261,7 +260,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here;
                     }
 
-                    Operand op = {operands_found[1], };
+                    Operand op;
+                    op.type = operands_found[1];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
@@ -277,7 +277,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here; 
                     }
 
-                    Operand op = {operands_found[0], };
+                    Operand op;
+                    op.type = operands_found[0];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
@@ -304,7 +305,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here;
                     }
    
-                    Operand op = {operands_found[2], };
+                    Operand op;
+                    op.type = operands_found[2];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
@@ -321,7 +323,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here; 
                     }
   
-                    Operand op = {operands_found[1], };
+                    Operand op;
+                    op.type = operands_found[1];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
@@ -353,7 +356,8 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0; // ERROR here;
                     }
            
-                    Operand op = {operands_found[2], };
+                    Operand op;
+                    op.type = operands_found[2];
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {

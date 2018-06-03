@@ -131,6 +131,7 @@ int main(int argc, char **argv) {
     }
 
     buffer_destroy(b);
+    (void)argc;
 
     return 0;
 }

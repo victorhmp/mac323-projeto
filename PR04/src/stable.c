@@ -1,4 +1,4 @@
-#include "stable.h"
+#include "../include/stable.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
