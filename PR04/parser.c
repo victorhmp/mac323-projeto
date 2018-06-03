@@ -189,7 +189,6 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                         return 0;
                     }
                     label = 1;
-                          
                     // char label_to_instr[strlen(curr_word)+1];                
                     a.label = curr_word;
                     *instr = &a;
@@ -235,6 +234,7 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
                     if (data && data->opd) {
+                        op.type = data->opd->type;
                         op.value.str = data->opd->value.str;
                     }
                     *a.opds[0] = op;
@@ -260,7 +260,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
 
                     Operand op = {operands_found[1], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.type = data->opd->type;
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[1] = op;
                 }
                 else {
@@ -271,7 +276,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
 
                     Operand op = {operands_found[0], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.type = data->opd->type;
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[0] = op;
                 }
                 break;
@@ -293,7 +303,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
    
                     Operand op = {operands_found[2], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.type = data->opd->type;
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[2] = op;
                 }
                 else {
@@ -305,7 +320,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
   
                     Operand op = {operands_found[1], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.type = data->opd->type;
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[1] = op;
                 }
                 break;
@@ -332,7 +352,12 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
                     }
            
                     Operand op = {operands_found[2], };
+                    EntryData *data = stable_find(al_table, curr_word);
                     op.value.str = curr_word;
+                    if (data && data->opd) {
+                        op.type = data->opd->type;
+                        op.value.str = data->opd->value.str;
+                    }
                     *a.opds[2] = op;
                 }
                 break;
@@ -372,33 +397,37 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
     }
 }
 
-// int main() {
+/* Test client
 
-//     SymbolTable al_table = stable_create();
-//     const char** errptr = malloc(sizeof(const char**));
+int main() {
 
-//     Instruction **instr = malloc(sizeof(Instruction**));
-//     printf("line     = hey MUL $3 $4 $7\n");
-//     parse("hey MUL $3 $4 $7", al_table, instr, errptr);
+    SymbolTable al_table = stable_create();
+    const char** errptr = malloc(sizeof(const char**));
 
-//     Instruction f = **instr;
+    Instruction **instr = malloc(sizeof(Instruction**));
+    printf("line     = hey MUL $3 $4 $7\n");
+    parse("hey MUL $3 $4 $7", al_table, instr, errptr);
 
-//     char attempt4[strlen(f.label)+1];
-//     strcpy(attempt4, f.label);
+    Instruction f = **instr;
 
-//     char attempt1[strlen(f.opds[0]->value.str)+1];
-//     strcpy(attempt1, f.opds[0]->value.str);
+    char attempt4[strlen(f.label)+1];
+    strcpy(attempt4, f.label);
 
-//     char attempt2[strlen(f.opds[1]->value.str)+1];
-//     strcpy(attempt2, f.opds[1]->value.str);
+    char attempt1[strlen(f.opds[0]->value.str)+1];
+    strcpy(attempt1, f.opds[0]->value.str);
 
-//     char attempt3[strlen(f.opds[2]->value.str)+1];
-//     strcpy(attempt3, f.opds[2]->value.str);
+    char attempt2[strlen(f.opds[1]->value.str)+1];
+    strcpy(attempt2, f.opds[1]->value.str);
 
-//     printf("label    = \"%s\"\n", attempt4);
-//     printf("operando 1: %s\n", attempt1);
-//     printf("operando 2: %s\n", attempt2);
-//     printf("operando 3: %s\n", attempt3);
+    char attempt3[strlen(f.opds[2]->value.str)+1];
+    strcpy(attempt3, f.opds[2]->value.str);
 
-//     return 0;
-// }
+    printf("label    = \"%s\"\n", attempt4);
+    printf("operando 1: %s\n", attempt1);
+    printf("operando 2: %s\n", attempt2);
+    printf("operando 3: %s\n", attempt3);
+
+    return 0;
+}
+
+*/

@@ -4,8 +4,6 @@
 
 #include "parser.c"
 #include "buffer.c"
-// #include "asmtypes.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +20,21 @@ char *errptr = 0;
 Instruction *instr = 0;
 
 // void create_alias(SymbolTable *st, InsertionResult insert_res) {
+//     InsertionResult insert;
+//     insert.new = -1;
+//     insert.data = NULL;
 
+//     insert = stable_insert(stable, f.label);
+//     if (insert.new == 0)
+//         printf("ERROR: Duplicate symbol\n");
+//     else {
+//         printf("New entry.\n");
+//         EntryData alias;
+//         alias.opd = f.opds[0];
+//         *(insert.data) = alias;
+
+//         printf("Just inserted %s, of type %s with the key %s.\n", insert.data->opd->value.str, get_type_string(insert.data->opd), f.label);
+//     }
 // }
 
 char *get_type_string(Operand *operand) {
@@ -84,12 +96,9 @@ int main(int argc, char **argv) {
                 if (insert.new == 0)
                     printf("ERROR: Duplicate symbol\n");
                 else {
-                    printf("New entry.\n");
                     EntryData alias;
                     alias.opd = f.opds[0];
                     *(insert.data) = alias;
-
-                    printf("Just inserted %s, of type %s with the key %s.\n", alias.opd->value.str, get_type_string(alias.opd), f.label);
                 }
             }
 
@@ -108,7 +117,7 @@ int main(int argc, char **argv) {
 
             for (int i = 0; i < 3; i++) {
                 if (f.opds[i]->value.str != NULL) {
-                    if (f.opds[i]->type == REGISTER) f.opds[i]->value.str++; 
+                    if (f.opds[i]->value.str[0] == '$') f.opds[i]->value.str++;
                     printf("%s(%s)", get_type_string(f.opds[i]), f.opds[i]->value.str);
                 }
                 if (i != 2 && f.opds[i+1]->value.str != NULL) printf(", ");
