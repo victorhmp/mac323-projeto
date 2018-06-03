@@ -9,6 +9,9 @@ center
 stable
 freq
 
+# For PR04
+parse_test
+
 # Global
 *.tar.gz
 *.tar.tgz
