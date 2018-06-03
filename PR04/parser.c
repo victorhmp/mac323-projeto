@@ -143,8 +143,10 @@ int parse(const char *s, SymbolTable al_table, Instruction **instr,
 
         // Simply works the current character (checks end, comment, etc.)
         if (!(isblank(*s) || *s == ',' || *s == '\0') || comment) { 
-            if (*s == '*')
+            if (*s == '*') {
                 comment = 1;
+                break;
+            }
             *word_pointer++ = *s++;
             continue;
         } 
