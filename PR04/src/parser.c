@@ -23,10 +23,19 @@ static int type_cmp(OperandType required, OperandType found) {
     if (required == IMMEDIATE) {
         if (found != REGISTER && found != BYTE1) equal = 0;
     } else if (required == ADDR2) {
-        if (found != LABEL && found != BYTE2 && found != NEG_NUMBER) equal = 0;
+        if (found != LABEL && found != BYTE2 && found != BYTE1 && found != NEG_NUMBER) equal = 0;
     } else if (required == ADDR3) {
-        if (found != LABEL && found != BYTE3 && found != NEG_NUMBER) equal = 0;
-    } else if (required != found) equal = 0;
+        if (found != LABEL && found != BYTE3 && found != BYTE1 && found != NEG_NUMBER) equal = 0;
+    } else if (required == BYTE2) {
+        if (found != BYTE1) equal = 0;
+    } else if (required == BYTE3) {
+        if (found != BYTE1) equal = 0;
+    } else if (required == TETRABYTE) {
+        if (found != BYTE1) equal = 0;
+    } else if (required == NEG_NUMBER) {
+        if (found != BYTE1) equal = 0;
+    }
+    else if (required != found) equal = 0;
 
     return equal;
 }
@@ -66,6 +75,11 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
         else return data->opd->type;
     }
 
+    if (!(strcmp(w, "rA") && strcmp(w, "rSP") && strcmp(w, "rX")
+        && strcmp(w, "rR") && strcmp(w, "rY") && strcmp(w, "rZ"))) {
+            return REGISTER;
+        }
+
     if (*w == '$') {
         w++;
         int is_register = 1;
@@ -80,7 +94,7 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
             return REGISTER;
         }
     }
-    else if (isdigit(*w) || *w == '-') {
+    else if (isdigit(*w) || *w == '-' || *w == '#') {
         int is_number = 1;
         while (!*w) {
             if (!isdigit(*w)) {
@@ -93,7 +107,8 @@ static OperandType find_type(const char *w, SymbolTable al_table) {
             //printf("%s is number\n", s);
             return BYTE1;
         }
-    }
+    } else if (*w == '\"') return STRING;
+
     return 0;
 }
 

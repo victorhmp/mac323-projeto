@@ -1,4 +1,3 @@
-	    EXTERN  main
 scflag	IS	$15
 flag	IS	$16				*flag para verificação de fim de texto
 arg	IS	$17				*argumento: comprimento máximo da linha	

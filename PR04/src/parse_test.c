@@ -37,6 +37,18 @@ Instruction *instr = 0;
 //     }
 // }
 
+int count_tabs(char *line) {
+    int sub = 0;
+    while (*line) {
+        if (*line == '\t') {
+            sub++;
+            printf("\t");
+        }
+        line++;
+    }
+    return sub;
+}
+
 char *get_type_string(Operand *operand) {
     if (operand->type == REGISTER)
         return "Register";
@@ -73,6 +85,7 @@ int main(int argc, char **argv) {
             long int dist = *errptr-current_line;
             if (lineno < 10) dist += 7;
             else dist += 8;
+            dist -= count_tabs(current_line);
             for (int i = 0; i < dist; i++) printf(" ");
             printf("^\n");
             printf("%s", get_error_msg());
